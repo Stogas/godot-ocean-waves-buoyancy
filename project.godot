@@ -12,7 +12,7 @@ config_version=5
 
 config/name="OceanWaves"
 run/main_scene="res://main.tscn"
-config/features=PackedStringArray("4.4", "Forward Plus")
+config/features=PackedStringArray("4.5", "Forward Plus")
 boot_splash/show_image=false
 config/icon="res://icon.svg"
 
@@ -43,8 +43,8 @@ window/show_image=false
 
 [editor]
 
-movie_writer/mjpeg_quality=1.0
 movie_writer/movie_file="C:/Users/Nick/Documents/personal/projects/lighthouse/clips/originals/better_boat_physics.avi"
+movie_writer/mjpeg_quality=1.0
 
 [editor_plugins]
 
