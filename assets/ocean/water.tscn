@@ -1,12 +1,12 @@
-[gd_scene load_steps=16 format=3 uid="uid://cg05obed2caxq"]
+[gd_scene load_steps=16 format=3]
 
-[ext_resource type="Material" uid="uid://byumtcccq4ew3" path="res://assets/water/mat_water.tres" id="1_h40ea"]
-[ext_resource type="ArrayMesh" uid="uid://qexqjidelskc" path="res://assets/water/clipmap_high_8k.obj" id="2_5ue44"]
-[ext_resource type="Script" uid="uid://bdjbwk3saoju4" path="res://assets/water/water.gd" id="3_opwjt"]
-[ext_resource type="Script" uid="uid://dddasf5sla0ws" path="res://assets/water/wave_cascade_parameters.gd" id="4_o6mi1"]
-[ext_resource type="Shader" uid="uid://bjmoda33o8qkd" path="res://assets/shaders/spatial/sea_spray.gdshader" id="5_1r6wh"]
-[ext_resource type="Texture2D" uid="uid://dtm5tyuh2slqt" path="res://assets/water/sea_spray.png" id="6_ncy0u"]
-[ext_resource type="Material" uid="uid://5xqyddws6rt5" path="res://assets/water/mat_spray.tres" id="7_st4sq"]
+[ext_resource type="Material" path="res://assets/ocean/resources/materials/mat_water.tres" id="1_h40ea"]
+[ext_resource type="ArrayMesh" path="res://assets/ocean/resources/meshes/clipmap_high_8k.obj" id="2_5ue44"]
+[ext_resource type="Script" path="res://assets/ocean/core/water.gd" id="3_opwjt"]
+[ext_resource type="Script" path="res://assets/ocean/core/wave_cascade_parameters.gd" id="4_o6mi1"]
+[ext_resource type="Shader" path="res://assets/ocean/shaders/spatial/sea_spray.gdshader" id="5_1r6wh"]
+[ext_resource type="Texture2D" path="res://assets/ocean/resources/textures/sea_spray.png" id="6_ncy0u"]
+[ext_resource type="Material" path="res://assets/ocean/resources/materials/mat_spray.tres" id="7_st4sq"]
 
 [sub_resource type="Resource" id="Resource_vivmo"]
 script = ExtResource("4_o6mi1")

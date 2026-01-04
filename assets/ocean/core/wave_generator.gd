@@ -26,12 +26,12 @@ func init_gpu(num_cascades : int) -> void:
 		context = null
 	
 	context = RenderingContext.create(RenderingServer.get_rendering_device())
-	var spectrum_compute_shader := context.load_shader('./assets/shaders/compute/spectrum_compute.glsl')
-	var fft_butterfly_shader := context.load_shader('./assets/shaders/compute/fft_butterfly.glsl')
-	var spectrum_modulate_shader := context.load_shader('./assets/shaders/compute/spectrum_modulate.glsl')
-	var fft_compute_shader := context.load_shader('./assets/shaders/compute/fft_compute.glsl')
-	var transpose_shader := context.load_shader('./assets/shaders/compute/transpose.glsl')
-	var fft_unpack_shader := context.load_shader('./assets/shaders/compute/fft_unpack.glsl')
+	var spectrum_compute_shader := context.load_shader('res://assets/ocean/shaders/compute/spectrum_compute.glsl')
+	var fft_butterfly_shader := context.load_shader('res://assets/ocean/shaders/compute/fft_butterfly.glsl')
+	var spectrum_modulate_shader := context.load_shader('res://assets/ocean/shaders/compute/spectrum_modulate.glsl')
+	var fft_compute_shader := context.load_shader('res://assets/ocean/shaders/compute/fft_compute.glsl')
+	var transpose_shader := context.load_shader('res://assets/ocean/shaders/compute/transpose.glsl')
+	var fft_unpack_shader := context.load_shader('res://assets/ocean/shaders/compute/fft_unpack.glsl')
 
 	# --- DESCRIPTOR PREPARATION ---
 	var dims := Vector2i(map_size, map_size)
@@ -180,6 +180,15 @@ func update(delta : float, parameters : Array[WaveCascadeParameters]) -> void:
 
 	pass_parameters = parameters
 	pass_num_cascades_remaining = len(parameters)
+	
+	if Engine.is_editor_hint():
+		# In editor, dispatch all at once to ensure visibility
+		var compute_list := context.compute_list_begin()
+		for i in range(pass_num_cascades_remaining):
+			_update(compute_list, i, pass_parameters)
+		context.compute_list_end()
+		pass_num_cascades_remaining = 0
+		context.submit()
 
 func _notification(what):
 	if what == NOTIFICATION_PREDELETE:

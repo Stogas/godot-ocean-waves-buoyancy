@@ -7,11 +7,11 @@ extends MeshInstance3D
 
 static var instance: MeshInstance3D
 
-const WATER_MAT := preload('res://assets/water/mat_water.tres')
-const SPRAY_MAT := preload('res://assets/water/mat_spray.tres')
-const WATER_MESH_HIGH8K := preload('res://assets/water/clipmap_high_8k.obj')
-const WATER_MESH_HIGH := preload('res://assets/water/clipmap_high.obj')
-const WATER_MESH_LOW := preload('res://assets/water/clipmap_low.obj')
+const WATER_MAT := preload('res://assets/ocean/resources/materials/mat_water.tres')
+const SPRAY_MAT := preload('res://assets/ocean/resources/materials/mat_spray.tres')
+const WATER_MESH_HIGH8K := preload('res://assets/ocean/resources/meshes/clipmap_high_8k.obj')
+const WATER_MESH_HIGH := preload('res://assets/ocean/resources/meshes/clipmap_high.obj')
+const WATER_MESH_LOW := preload('res://assets/ocean/resources/meshes/clipmap_low.obj')
 
 enum MeshQuality { LOW, HIGH, HIGH8K }
 
@@ -109,16 +109,29 @@ func _init() -> void:
 	rng.set_seed(1234) # This seed gives big waves!
 
 func _ready() -> void:
-	map_scales.resize(len(parameters))
+	if not rng: rng = RandomNumberGenerator.new()
+	rng.set_seed(1234)
+	
+	map_scales.resize(8)
+	map_scales.fill(Vector4.ZERO)
 
 	RenderingServer.global_shader_parameter_set(&'water_color', water_color.srgb_to_linear())
 	RenderingServer.global_shader_parameter_set(&'foam_color', foam_color.srgb_to_linear())
 
+	_setup_wave_generator()
+	
 	if wave_generator:
 		_img = wave_generator.retrieve_displacement_map(0, _img)
-		_img_height = _img.get_height()
-		_img_width = _img.get_width()
+		if _img:
+			_img_height = _img.get_height()
+			_img_width = _img.get_width()
 	_displacement_update_rate = (1 / displacement_updates_per_second)
+	_update_scales_uniform()
+	
+	# Force push globals
+	RenderingServer.global_shader_parameter_set(&'num_cascades', parameters.size())
+	RenderingServer.global_shader_parameter_set(&'displacements', displacement_maps)
+	RenderingServer.global_shader_parameter_set(&'normals', normal_maps)
 
 func _process(delta : float) -> void:
 	if not wave_generator: _setup_wave_generator()
@@ -161,19 +174,31 @@ func _setup_wave_generator() -> void:
 	RenderingServer.global_shader_parameter_set(&'normals', normal_maps)
 
 func _update_scales_uniform() -> void:
-	map_scales.resize(len(parameters))
+	map_scales.resize(8)
+	map_scales.fill(Vector4.ZERO)
 	for i in len(parameters):
+		if i >= 8: break
 		var params := parameters[i]
 		var uv_scale := Vector2.ONE / params.tile_length
 		map_scales[i] = Vector4(uv_scale.x, uv_scale.y, params.displacement_scale, params.normal_scale)
 	
-	# No global shader parameter for arrays :(
+	# Set on the specific material instances of this node
+	if material_override:
+		material_override.set_shader_parameter(&'map_scales', map_scales)
+	
+	# Also update the preloaded resources just in case, but material_override is priority
 	WATER_MAT.set_shader_parameter(&'map_scales', map_scales)
-	SPRAY_MAT.set_shader_parameter(&'map_scales', map_scales)
+	if SPRAY_MAT: SPRAY_MAT.set_shader_parameter(&'map_scales', map_scales)
 
 func _update_water(delta : float) -> void:
 	if wave_generator == null: _setup_wave_generator()
 	wave_generator.update(delta, parameters)
+	
+	# In editor, ensure globals are pushed (sometimes they get lost on scene switch)
+	if Engine.is_editor_hint():
+		RenderingServer.global_shader_parameter_set(&'num_cascades', parameters.size())
+		RenderingServer.global_shader_parameter_set(&'displacements', displacement_maps)
+		RenderingServer.global_shader_parameter_set(&'normals', normal_maps)
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:

@@ -18,7 +18,7 @@ var fluid_density_kg_per_m3: float = 1000; # Thanks, science
 #var indicator_mesh: BoxMesh;
 
 func _ready() -> void:
-	var ocean_script = load("res://assets/water/water.gd")
+	var ocean_script = load("res://assets/ocean/core/water.gd")
 	if ocean_script:
 		water = ocean_script.instance
 	
