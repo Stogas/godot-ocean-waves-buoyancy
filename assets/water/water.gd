@@ -1,8 +1,11 @@
 # Adapted from https://github.com/Lucactus22/GodotOceanWaves_bouyancy/tree/main
 @tool
+class_name Ocean
 extends MeshInstance3D
 ## Handles updating the displacement/normal maps for the water material as well as
 ## managing wave generation pipelines.
+
+static var instance: MeshInstance3D
 
 const WATER_MAT := preload('res://assets/water/mat_water.tres')
 const SPRAY_MAT := preload('res://assets/water/mat_spray.tres')
@@ -95,6 +98,13 @@ func get_wave_height(p_global_position: Vector3) -> float:
 	return displacement.y
 
 # ------ Private Methods ----- #
+func _enter_tree() -> void:
+	instance = self
+
+func _exit_tree() -> void:
+	if instance == self:
+		instance = null
+
 func _init() -> void:
 	rng.set_seed(1234) # This seed gives big waves!
 

@@ -1,7 +1,8 @@
+class_name BuoyantCell
 extends MeshInstance3D
 
-@export var water : Node
-@export var parent : RigidBody3D
+var water : Node3D
+var parent : RigidBody3D
 @export var cell_density_kg_per_m3: float = 500; # 500 is about right for solid wood, though 300-900 are acceptable ranges
 @export var calc_f_gravity: bool = false; # True if this should simulate gravity on this cell. 0 if gravity is calculated on the whole rigidbody
 @export var engine_force: float = 0; # If not 0 provides thrust of the amount given at this cell in the local X direction
@@ -16,8 +17,18 @@ var fluid_density_kg_per_m3: float = 1000; # Thanks, science
 #var indicator: MeshInstance3D;
 #var indicator_mesh: BoxMesh;
 
+func _ready() -> void:
+	var ocean_script = load("res://assets/water/water.gd")
+	if ocean_script:
+		water = ocean_script.instance
+	
+	if not parent:
+		var p = get_parent()
+		if p is RigidBody3D:
+			parent = p
+
 func _physics_process(delta: float) -> void:
-	if !active:
+	if !active or not water or not parent:
 		return
 
 	apply_force_on_cell(delta)
