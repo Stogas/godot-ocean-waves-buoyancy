@@ -29,7 +29,7 @@ extends RigidBody3D
 # could even simulate sinking as some boxes gain weight equal to or greater than
 # the volume of water they displace
 func float_by_box_cells(delta: float, center: Vector3, size: Vector3, cell_weight: float = 0) -> void:
-	var volume = size.x * size.y * size.z
+	var _volume = size.x * size.y * size.z
 	
 	pass
 
