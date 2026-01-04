@@ -1,0 +1,94 @@
+[gd_scene load_steps=16 format=3 uid="uid://cg05obed2caxq"]
+
+[ext_resource type="Material" uid="uid://byumtcccq4ew3" path="res://assets/water/mat_water.tres" id="1_h40ea"]
+[ext_resource type="ArrayMesh" uid="uid://qexqjidelskc" path="res://assets/water/clipmap_high_8k.obj" id="2_5ue44"]
+[ext_resource type="Script" uid="uid://bdjbwk3saoju4" path="res://assets/water/water.gd" id="3_opwjt"]
+[ext_resource type="Script" uid="uid://dddasf5sla0ws" path="res://assets/water/wave_cascade_parameters.gd" id="4_o6mi1"]
+[ext_resource type="Shader" uid="uid://bjmoda33o8qkd" path="res://assets/shaders/spatial/sea_spray.gdshader" id="5_1r6wh"]
+[ext_resource type="Texture2D" uid="uid://dtm5tyuh2slqt" path="res://assets/water/sea_spray.png" id="6_ncy0u"]
+[ext_resource type="Material" uid="uid://5xqyddws6rt5" path="res://assets/water/mat_spray.tres" id="7_st4sq"]
+
+[sub_resource type="Resource" id="Resource_vivmo"]
+script = ExtResource("4_o6mi1")
+tile_length = Vector2(400, 400)
+displacement_scale = 0.75
+normal_scale = 0.75
+wind_speed = 5.0
+wind_direction = 15.0
+fetch_length = 200.0
+swell = 2.0
+spread = 0.5
+whitecap = 0.4
+foam_amount = 0.12
+
+[sub_resource type="Resource" id="Resource_adqv5"]
+script = ExtResource("4_o6mi1")
+tile_length = Vector2(128, 128)
+displacement_scale = 0.5
+normal_scale = 0.5
+wind_speed = 5.0
+wind_direction = 15.0
+fetch_length = 200.0
+swell = 1.2
+whitecap = 0.4
+foam_amount = 0.77
+
+[sub_resource type="Resource" id="Resource_luhq0"]
+script = ExtResource("4_o6mi1")
+tile_length = Vector2(57, 57)
+displacement_scale = 0.1
+normal_scale = 0.1
+wind_speed = 5.0
+wind_direction = 15.0
+fetch_length = 200.0
+swell = 0.6
+foam_amount = 0.0
+
+[sub_resource type="Resource" id="Resource_83u3u"]
+script = ExtResource("4_o6mi1")
+tile_length = Vector2(25, 25)
+displacement_scale = 0.1
+normal_scale = 0.1
+wind_speed = 5.0
+wind_direction = 20.0
+fetch_length = 200.0
+whitecap = 0.0
+foam_amount = 1.0
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_k6xhe"]
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_tsx6q"]
+noise = SubResource("FastNoiseLite_k6xhe")
+seamless = true
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ds3o1"]
+render_priority = 0
+shader = ExtResource("5_1r6wh")
+shader_parameter/max_alpha = 0.666
+shader_parameter/albedo_texture = ExtResource("6_ncy0u")
+shader_parameter/dissolve_texture = SubResource("NoiseTexture2D_tsx6q")
+
+[sub_resource type="QuadMesh" id="QuadMesh_06d3e"]
+
+[node name="Water" type="MeshInstance3D"]
+sorting_offset = 999.0
+material_override = ExtResource("1_h40ea")
+cast_shadow = 0
+extra_cull_margin = 1000.0
+mesh = ExtResource("2_5ue44")
+skeleton = NodePath("")
+script = ExtResource("3_opwjt")
+water_color = Color(0.0392157, 0.192157, 0.180392, 1)
+foam_color = Color(0.898039, 0.854902, 0.8, 1)
+parameters = Array[ExtResource("4_o6mi1")]([SubResource("Resource_vivmo"), SubResource("Resource_adqv5"), SubResource("Resource_luhq0"), SubResource("Resource_83u3u")])
+map_size = 512
+updates_per_second = 60.0
+
+[node name="WaterSprayEmitter" type="GPUParticles3D" parent="."]
+transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)
+material_override = SubResource("ShaderMaterial_ds3o1")
+cast_shadow = 0
+amount = 32768
+lifetime = 6.0
+process_material = ExtResource("7_st4sq")
+draw_pass_1 = SubResource("QuadMesh_06d3e")

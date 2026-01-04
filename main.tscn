@@ -1,17 +1,11 @@
-[gd_scene load_steps=37 format=3 uid="uid://dx4r13gqfh13"]
+[gd_scene load_steps=23 format=3 uid="uid://dx4r13gqfh13"]
 
 [ext_resource type="Script" uid="uid://ps3ogobs3y3b" path="res://assets/scripts/main.gd" id="1_skarq"]
-[ext_resource type="Script" uid="uid://dddasf5sla0ws" path="res://assets/water/wave_cascade_parameters.gd" id="2_pw5n6"]
 [ext_resource type="Texture2D" uid="uid://cnft723bala47" path="res://assets/skybox.png" id="3_0ksgj"]
+[ext_resource type="PackedScene" uid="uid://cg05obed2caxq" path="res://assets/water/water.tscn" id="4_kek77"]
 [ext_resource type="Script" uid="uid://4j6vkvpadkr7" path="res://assets/player/camera.gd" id="4_v2yip"]
-[ext_resource type="Material" uid="uid://byumtcccq4ew3" path="res://assets/water/mat_water.tres" id="5_lt75t"]
-[ext_resource type="ArrayMesh" uid="uid://qexqjidelskc" path="res://assets/water/clipmap_high_8k.obj" id="5_w48qg"]
 [ext_resource type="AudioStream" uid="uid://cvvn0vke5comw" path="res://assets/ocean_loop.wav" id="6_jpklm"]
-[ext_resource type="Script" uid="uid://bdjbwk3saoju4" path="res://assets/water/water.gd" id="7_s0x5e"]
 [ext_resource type="AudioStream" uid="uid://ck6vmandgjhy0" path="res://assets/wind_loop.wav" id="8_6r5si"]
-[ext_resource type="Shader" uid="uid://bjmoda33o8qkd" path="res://assets/shaders/spatial/sea_spray.gdshader" id="8_eu8jb"]
-[ext_resource type="Material" uid="uid://5xqyddws6rt5" path="res://assets/water/mat_spray.tres" id="9_skbf4"]
-[ext_resource type="Texture2D" uid="uid://dtm5tyuh2slqt" path="res://assets/water/sea_spray.png" id="10_spqpo"]
 [ext_resource type="PackedScene" uid="uid://f66806hbo71b" path="res://assets/models/ss_norrtelje_1900.glb" id="14_2cqfq"]
 [ext_resource type="Script" uid="uid://dsn01qhv7ioi3" path="res://assets/scripts/buoyant_cell.gd" id="14_vivmo"]
 [ext_resource type="Script" uid="uid://kwfe6bfkiqn2" path="res://assets/scripts/mass_calculation.gd" id="14_yaehf"]
@@ -38,68 +32,6 @@ fog_depth_end = 350.0
 volumetric_fog_enabled = true
 volumetric_fog_density = 0.003
 volumetric_fog_length = 256.0
-
-[sub_resource type="Resource" id="Resource_vivmo"]
-script = ExtResource("2_pw5n6")
-tile_length = Vector2(400, 400)
-displacement_scale = 0.75
-normal_scale = 0.75
-wind_speed = 5.0
-wind_direction = 15.0
-fetch_length = 200.0
-swell = 2.0
-spread = 0.5
-whitecap = 0.4
-foam_amount = 0.12
-
-[sub_resource type="Resource" id="Resource_adqv5"]
-script = ExtResource("2_pw5n6")
-tile_length = Vector2(128, 128)
-displacement_scale = 0.5
-normal_scale = 0.5
-wind_speed = 5.0
-wind_direction = 15.0
-fetch_length = 200.0
-swell = 1.2
-whitecap = 0.4
-foam_amount = 0.77
-
-[sub_resource type="Resource" id="Resource_luhq0"]
-script = ExtResource("2_pw5n6")
-tile_length = Vector2(57, 57)
-displacement_scale = 0.1
-normal_scale = 0.1
-wind_speed = 5.0
-wind_direction = 15.0
-fetch_length = 200.0
-swell = 0.6
-foam_amount = 0.0
-
-[sub_resource type="Resource" id="Resource_83u3u"]
-script = ExtResource("2_pw5n6")
-tile_length = Vector2(25, 25)
-displacement_scale = 0.1
-normal_scale = 0.1
-wind_speed = 5.0
-wind_direction = 20.0
-fetch_length = 200.0
-whitecap = 0.0
-foam_amount = 1.0
-
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_k6xhe"]
-
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_tsx6q"]
-noise = SubResource("FastNoiseLite_k6xhe")
-seamless = true
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_ds3o1"]
-render_priority = 0
-shader = ExtResource("8_eu8jb")
-shader_parameter/max_alpha = 0.666
-shader_parameter/albedo_texture = ExtResource("10_spqpo")
-shader_parameter/dissolve_texture = SubResource("NoiseTexture2D_tsx6q")
-
-[sub_resource type="QuadMesh" id="QuadMesh_06d3e"]
 
 [sub_resource type="FogMaterial" id="FogMaterial_riff4"]
 density = 8.0
@@ -153,29 +85,8 @@ transform = Transform3D(-0.964313, 0, -0.264765, 0, 1, 0, 0.264765, 0, -0.964313
 far = 10000.0
 script = ExtResource("4_v2yip")
 
-[node name="Water" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 71, 0, 0)
-sorting_offset = 999.0
-material_override = ExtResource("5_lt75t")
-cast_shadow = 0
-extra_cull_margin = 1000.0
-mesh = ExtResource("5_w48qg")
-skeleton = NodePath("")
-script = ExtResource("7_s0x5e")
-water_color = Color(0.0392157, 0.192157, 0.180392, 1)
-foam_color = Color(0.898039, 0.854902, 0.8, 1)
-parameters = Array[ExtResource("2_pw5n6")]([SubResource("Resource_vivmo"), SubResource("Resource_adqv5"), SubResource("Resource_luhq0"), SubResource("Resource_83u3u")])
-map_size = 512
-updates_per_second = 60.0
-
-[node name="WaterSprayEmitter" type="GPUParticles3D" parent="Water"]
-transform = Transform3D(15, 0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0)
-material_override = SubResource("ShaderMaterial_ds3o1")
-cast_shadow = 0
-amount = 32768
-lifetime = 6.0
-process_material = ExtResource("9_skbf4")
-draw_pass_1 = SubResource("QuadMesh_06d3e")
+[node name="Water" parent="." instance=ExtResource("4_kek77")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -79, 0, -14)
 
 [node name="FogVolume" type="FogVolume" parent="."]
 shape = 4
@@ -215,7 +126,7 @@ transform = Transform3D(1, 5.32907e-15, 0, -1.55431e-15, 1, 2.13163e-14, 0, 0, 1
 visible = false
 mesh = SubResource("BoxMesh_2cqfq")
 script = ExtResource("14_vivmo")
-water = NodePath("../../Water")
+water = NodePath("")
 parent = NodePath("..")
 cell_density_kg_per_m3 = 100.0
 calc_f_gravity = true
@@ -225,7 +136,7 @@ transform = Transform3D(1, 5.32907e-15, 0, -1.55431e-15, 1, 2.13163e-14, 0, 0, 1
 visible = false
 mesh = SubResource("BoxMesh_vivmo")
 script = ExtResource("14_vivmo")
-water = NodePath("../../Water")
+water = NodePath("")
 parent = NodePath("..")
 cell_density_kg_per_m3 = 100.0
 calc_f_gravity = true
@@ -235,7 +146,7 @@ transform = Transform3D(1, 5.32907e-15, 0, -1.55431e-15, 1, 2.13163e-14, 0, 0, 1
 visible = false
 mesh = SubResource("BoxMesh_yaehf")
 script = ExtResource("14_vivmo")
-water = NodePath("../../Water")
+water = NodePath("")
 parent = NodePath("..")
 cell_density_kg_per_m3 = 100.0
 calc_f_gravity = true
@@ -245,7 +156,7 @@ transform = Transform3D(1, 5.32907e-15, 0, -1.55431e-15, 1, 2.13163e-14, 0, 0, 1
 visible = false
 mesh = SubResource("BoxMesh_074og")
 script = ExtResource("14_vivmo")
-water = NodePath("../../Water")
+water = NodePath("")
 parent = NodePath("..")
 cell_density_kg_per_m3 = 100.0
 calc_f_gravity = true
@@ -255,7 +166,7 @@ transform = Transform3D(1, 5.32907e-15, 0, -1.55431e-15, 1, 2.13163e-14, 0, 0, 1
 visible = false
 mesh = SubResource("BoxMesh_vivmo")
 script = ExtResource("14_vivmo")
-water = NodePath("../../Water")
+water = NodePath("")
 parent = NodePath("..")
 cell_density_kg_per_m3 = 100.0
 calc_f_gravity = true
@@ -265,7 +176,7 @@ transform = Transform3D(1, 5.32907e-15, 0, -1.55431e-15, 1, 2.13163e-14, 0, 0, 1
 visible = false
 mesh = SubResource("BoxMesh_2cqfq")
 script = ExtResource("14_vivmo")
-water = NodePath("../../Water")
+water = NodePath("")
 parent = NodePath("..")
 cell_density_kg_per_m3 = 100.0
 calc_f_gravity = true
@@ -275,7 +186,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.58, -7, 0)
 visible = false
 mesh = SubResource("BoxMesh_cegan")
 script = ExtResource("14_vivmo")
-water = NodePath("../../Water")
+water = NodePath("")
 parent = NodePath("..")
 cell_density_kg_per_m3 = 1300.0
 calc_f_gravity = true
@@ -286,7 +197,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.58, -7, 0)
 visible = false
 mesh = SubResource("BoxMesh_cegan")
 script = ExtResource("14_vivmo")
-water = NodePath("../../Water")
+water = NodePath("")
 parent = NodePath("..")
 cell_density_kg_per_m3 = 1100.0
 calc_f_gravity = true
@@ -313,7 +224,7 @@ shape = SubResource("BoxShape3D_vivmo")
 visible = false
 mesh = SubResource("BoxMesh_82xsv")
 script = ExtResource("14_vivmo")
-water = NodePath("../../Water")
+water = NodePath("")
 parent = NodePath("..")
 cell_density_kg_per_m3 = 300.0
 calc_f_gravity = true
