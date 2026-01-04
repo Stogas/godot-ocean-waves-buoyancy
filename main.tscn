@@ -49,7 +49,6 @@ wind_direction = 15.0
 fetch_length = 200.0
 swell = 2.0
 spread = 0.5
-detail = 1.0
 whitecap = 0.4
 foam_amount = 0.12
 
@@ -62,8 +61,6 @@ wind_speed = 5.0
 wind_direction = 15.0
 fetch_length = 200.0
 swell = 1.2
-spread = 0.55
-detail = 1.0
 whitecap = 0.4
 foam_amount = 0.77
 
@@ -76,9 +73,6 @@ wind_speed = 5.0
 wind_direction = 15.0
 fetch_length = 200.0
 swell = 0.6
-spread = 0.55
-detail = 1.0
-whitecap = 0.5
 foam_amount = 0.0
 
 [sub_resource type="Resource" id="Resource_83u3u"]
@@ -89,17 +83,14 @@ normal_scale = 0.1
 wind_speed = 5.0
 wind_direction = 20.0
 fetch_length = 200.0
-swell = 0.8
-spread = 0.55
-detail = 1.0
 whitecap = 0.0
 foam_amount = 1.0
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_k6xhe"]
 
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_tsx6q"]
-seamless = true
 noise = SubResource("FastNoiseLite_k6xhe")
+seamless = true
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ds3o1"]
 render_priority = 0
@@ -163,7 +154,7 @@ far = 10000.0
 script = ExtResource("4_v2yip")
 
 [node name="Water" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, -154)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0, 50)
 sorting_offset = 999.0
 material_override = ExtResource("5_lt75t")
 cast_shadow = 0
@@ -202,10 +193,10 @@ autoplay = true
 
 [node name="Ferry Simplified Experiment" type="RigidBody3D" parent="." node_paths=PackedStringArray("buoyant_cells", "mesh")]
 transform = Transform3D(-0.994964, -1.30385e-08, -0.10024, 7.31041e-08, 1, -2.87383e-08, 0.10024, 1.19209e-07, -0.994964, -79.8999, 5, 9.36186)
-mass = 1.04378e+06
+mass = 1043780.0
 gravity_scale = 0.0
 center_of_mass_mode = 1
-inertia = Vector3(9.4394e+07, 1.29109e+07, 587128)
+inertia = Vector3(94394000, 12910900, 587128)
 linear_velocity = Vector3(2, 0, 0)
 script = ExtResource("14_yaehf")
 buoyant_cells = [NodePath("AS Cell"), NodePath("FS Cell"), NodePath("MS Cell"), NodePath("MP Cell"), NodePath("FP Cell"), NodePath("AP Cell"), NodePath("Aft Ballast"), NodePath("Fore Ballast")]

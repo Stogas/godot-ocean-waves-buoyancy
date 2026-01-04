@@ -64,11 +64,7 @@ enum MeshQuality { LOW, HIGH, HIGH8K }
 @export var displacement_updates_per_second := 10
 
 # ----- Bookkeeping Variables ----- #
-var wave_generator : WaveGenerator :
-	set(value):
-		if wave_generator: wave_generator.queue_free()
-		wave_generator = value
-		add_child(wave_generator)
+var wave_generator : WaveGenerator
 var rng = RandomNumberGenerator.new()
 var time := 0.0
 var next_update_time := 0.0
@@ -88,6 +84,8 @@ func get_wave_height(p_global_position: Vector3) -> float:
 	var uv: Vector2 = Vector2(p_global_position.x, p_global_position.z)
 	var displacement: Vector3 = Vector3.ZERO
 	
+	if map_scales.is_empty(): return 0.0
+	
 	# TODO: Do once for each cascade for best accuracy
 	var i = 0;
 	var scales: Vector4 = map_scales[i]
@@ -106,12 +104,16 @@ func _ready() -> void:
 	RenderingServer.global_shader_parameter_set(&'water_color', water_color.srgb_to_linear())
 	RenderingServer.global_shader_parameter_set(&'foam_color', foam_color.srgb_to_linear())
 
-	_img = wave_generator.retrieve_displacement_map(0, _img)
-	_img_height = _img.get_height()
-	_img_width = _img.get_width()
+	if wave_generator:
+		_img = wave_generator.retrieve_displacement_map(0, _img)
+		_img_height = _img.get_height()
+		_img_width = _img.get_width()
 	_displacement_update_rate = (1 / displacement_updates_per_second)
 
 func _process(delta : float) -> void:
+	if not wave_generator: _setup_wave_generator()
+	if not wave_generator: return
+
 	# TODO: These should probably be the same update
 	# Update waves once every 1.0/updates_per_second.
 	if updates_per_second == 0 or time >= next_update_time:
@@ -132,7 +134,10 @@ func _setup_wave_generator() -> void:
 	for param in parameters:
 		param.should_generate_spectrum = true
 
-	wave_generator = WaveGenerator.new()
+	if not wave_generator:
+		wave_generator = WaveGenerator.new()
+		add_child(wave_generator)
+	
 	wave_generator.map_size = map_size
 	wave_generator.init_gpu(maxi(2, parameters.size())) # FIXME: This is needed because my RenderContext API sucks...
 

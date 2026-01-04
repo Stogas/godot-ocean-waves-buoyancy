@@ -46,8 +46,14 @@ func _notification(what):
 			device.free()
 
 # --- WRAPPER FUNCTIONS ---
-func submit() -> void: device.submit(); needs_sync = true
-func sync() -> void: device.sync(); needs_sync = false
+func submit() -> void:
+	if device != RenderingServer.get_rendering_device():
+		device.submit()
+		needs_sync = true
+func sync() -> void:
+	if device != RenderingServer.get_rendering_device():
+		device.sync()
+		needs_sync = false
 func compute_list_begin() -> int: return device.compute_list_begin()
 func compute_list_end() -> void: device.compute_list_end()
 func compute_list_add_barrier(compute_list : int) -> void: device.compute_list_add_barrier(compute_list)
@@ -73,14 +79,13 @@ func create_uniform_buffer(size : int, data : PackedByteArray=[]) -> Descriptor:
 		data += padding
 	return Descriptor.new(deletion_queue.push(device.uniform_buffer_create(max(size, len(data)), data)), RenderingDevice.UNIFORM_TYPE_UNIFORM_BUFFER)
 
-func create_texture(dimensions : Vector2i, format : RenderingDevice.DataFormat, usage:=0x18B, num_layers:=0, view:=RDTextureView.new(), data : PackedByteArray=[]) -> Descriptor:
-	assert(num_layers >= 1)
+func create_texture(dimensions : Vector2i, format : RenderingDevice.DataFormat, usage:=0x18B, num_layers:=1, view:=RDTextureView.new(), data : PackedByteArray=[]) -> Descriptor:
 	var texture_format := RDTextureFormat.new()
-	texture_format.array_layers = 1 if num_layers == 0 else num_layers
+	texture_format.array_layers = num_layers
 	texture_format.format = format
 	texture_format.width = dimensions.x
 	texture_format.height = dimensions.y
-	texture_format.texture_type = RenderingDevice.TEXTURE_TYPE_2D if num_layers == 0 else RenderingDevice.TEXTURE_TYPE_2D_ARRAY
+	texture_format.texture_type = RenderingDevice.TEXTURE_TYPE_2D if num_layers <= 1 else RenderingDevice.TEXTURE_TYPE_2D_ARRAY
 	texture_format.usage_bits = usage # Default: RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice.TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RenderingDevice.TEXTURE_USAGE_STORAGE_BIT | RenderingDevice.TEXTURE_USAGE_CAN_COPY_TO_BIT | RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT
 	return Descriptor.new(deletion_queue.push(device.texture_create(texture_format, view, data)), RenderingDevice.UNIFORM_TYPE_IMAGE)
 

@@ -44,7 +44,7 @@ Above: Had some fun with shaders too. Though minimized the waves. Boat is a hex 
 - [ ] Add some nice VFX for wakes and splashes when a hull slaps down on water
 
 ### Performance
-- [ ] See if I can figure out the same thing krautdev and Luctatus22 were working on: reading displacement textures from the GPU more efficiently, or simply duplicating the FFT calculation. Luctatus22's README has some ideas here. KrautDev pointed out that Godot 4.4 made async reads from the GPU available, and this doesn't use that yet
+- [x] See if I can figure out the same thing krautdev and Luctatus22 were working on: reading displacement textures from the GPU more efficiently, or simply duplicating the FFT calculation. Luctatus22's README has some ideas here. KrautDev pointed out that Godot 4.4 made async reads from the GPU available, and this doesn't use that yet
 - [ ] Figure out how to get the shader to a level of performance where it can work on a laptop without a dedicated graphics card
 
 ### Demos

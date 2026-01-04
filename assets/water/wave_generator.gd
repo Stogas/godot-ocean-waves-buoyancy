@@ -14,10 +14,18 @@ var descriptors : Dictionary
 var pass_parameters : Array[WaveCascadeParameters]
 var pass_num_cascades_remaining : int
 
+# Cache for async readback
+var cascade_images : Array[Image] = []
+var pending_readbacks : Array[bool] = []
+
 
 func init_gpu(num_cascades : int) -> void:
 	# --- DEVICE/SHADER CREATION ---
-	if not context: context = RenderingContext.create(RenderingServer.get_rendering_device())
+	if context: 
+		context.free()
+		context = null
+	
+	context = RenderingContext.create(RenderingServer.get_rendering_device())
 	var spectrum_compute_shader := context.load_shader('./assets/shaders/compute/spectrum_compute.glsl')
 	var fft_butterfly_shader := context.load_shader('./assets/shaders/compute/fft_butterfly.glsl')
 	var spectrum_modulate_shader := context.load_shader('./assets/shaders/compute/spectrum_modulate.glsl')
@@ -28,6 +36,13 @@ func init_gpu(num_cascades : int) -> void:
 	# --- DESCRIPTOR PREPARATION ---
 	var dims := Vector2i(map_size, map_size)
 	var num_fft_stages := int(log(map_size) / log(2))
+
+	# Initialize image cache and pending trackers
+	cascade_images.clear()
+	pending_readbacks.clear()
+	for i in num_cascades:
+		cascade_images.append(Image.create_empty(map_size, map_size, false, Image.FORMAT_RGBAH))
+		pending_readbacks.append(false)
 
 	descriptors[&'spectrum'] = context.create_texture(dims, RenderingDevice.DATA_FORMAT_R32G32B32A32_SFLOAT, RenderingDevice.TEXTURE_USAGE_STORAGE_BIT | RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT, num_cascades)
 	descriptors[&'butterfly_factors'] = context.create_storage_buffer(num_fft_stages*map_size * 4 * 4)         # Size: (#FFT stages * map size * sizeof(vec4))
@@ -70,51 +85,55 @@ func init_gpu(num_cascades : int) -> void:
 func get_displacement_map_rid(cascade:int) -> RID:
 	return descriptors[&'displacement_map'].rid
 
-## Returns the displacement map image for a specific cascade (CPU-side)
-# Accepts a preallocated image param to avoid needlessly creating new
-# image objects on the heap
-func get_displacement_map_image(cascade:int = 0, img:Image = null) -> Image:
-	var tex_rid := get_displacement_map_rid(cascade)
-	var data := context.device.texture_get_data(tex_rid, 0)
-	# For 2D array textures, need to slice the correct layer
-	var bytes_per_pixel = 8 # RGBA16F (4 channels × 2 bytes)
-	var layer_size = map_size * map_size * bytes_per_pixel
-	var layer_offset = cascade * layer_size
-	var layer_data = data.slice(layer_offset, layer_offset + layer_size)
+## Updates and retrieves displacement data (call this after simulation)
+func retrieve_displacement_map(cascade:int, img:Image = null) -> Image:
+	if cascade >= cascade_images.size() or cascade_images[cascade] == null:
+		if img == null: return Image.create_empty(map_size, map_size, false, Image.FORMAT_RGBAH)
+		return img
+	
+	var source_img := cascade_images[cascade]
+	var source_data := source_img.get_data()
+	
+	if source_data.is_empty():
+		if img == null: return Image.create_empty(map_size, map_size, false, Image.FORMAT_RGBAH)
+		return img
+
 	if img == null:
 		img = Image.create_from_data(
 			map_size, map_size, 
 			false, Image.FORMAT_RGBAH, 
-			layer_data
+			source_data
 		)
 	else:
-		img.set_data(
-			map_size, map_size, 
-			false, Image.FORMAT_RGBAH, 
-			layer_data
-		)
-	return img
+		img.copy_from(source_img)
 	
-## Updates and retrieves displacement data (call this after simulation)
-func retrieve_displacement_map(cascade:int, img:Image = null) -> Image:
-	# Ensure proper synchronization
-	#context.submit()
-	#context.sync()
+	return img
 
-	# Update CPU-side image data
-	var displacement_img := get_displacement_map_image(cascade, img)
-	displacement_img.convert(Image.FORMAT_RGBAF) # Convert to workable format
-	return displacement_img
-
+func _on_displacement_readback(data: PackedByteArray, cascade_index: int) -> void:
+	if cascade_index < pending_readbacks.size():
+		pending_readbacks[cascade_index] = false
+	
+	if not data.is_empty() and cascade_index < cascade_images.size():
+		cascade_images[cascade_index].set_data(map_size, map_size, false, Image.FORMAT_RGBAH, data)
 	
 func _process(delta: float) -> void:
 	# Update one cascade each frame for load balancing.
 	if pass_num_cascades_remaining == 0: return
+	
+	var cascade_index := pass_num_cascades_remaining - 1
 	pass_num_cascades_remaining -= 1
 
 	var compute_list := context.compute_list_begin()
-	_update(compute_list, pass_num_cascades_remaining, pass_parameters)
+	_update(compute_list, cascade_index, pass_parameters)
 	context.compute_list_end()
+	
+	# Trigger async readback for the updated cascade (only if one isn't already pending)
+	if cascade_index < pending_readbacks.size() and not pending_readbacks[cascade_index]:
+		context.submit()
+		var tex_rid := get_displacement_map_rid(cascade_index)
+		if tex_rid.is_valid():
+			pending_readbacks[cascade_index] = true
+			context.device.texture_get_data_async(tex_rid, cascade_index, _on_displacement_readback.bind(cascade_index))
 
 func _update(compute_list : int, cascade_index : int, parameters : Array[WaveCascadeParameters]) -> void:
 	var params := parameters[cascade_index]
