@@ -84,8 +84,8 @@ var _img_width: int;
 var map_scales : PackedVector4Array;
 
 # ------ Public Interface ----- #
-func get_wave_height(global_position: Vector3) -> float:
-	var uv: Vector2 = Vector2(global_position.x, global_position.z)
+func get_wave_height(p_global_position: Vector3) -> float:
+	var uv: Vector2 = Vector2(p_global_position.x, p_global_position.z)
 	var displacement: Vector3 = Vector3.ZERO
 	
 	# TODO: Do once for each cascade for best accuracy
